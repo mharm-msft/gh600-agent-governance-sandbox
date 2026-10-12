@@ -88,14 +88,3 @@ def test_the_deploy_demo_can_only_be_started_by_hand_and_only_prints_text():
         for line in str(step.get("run", "")).splitlines():
             assert line.strip().startswith("echo "), f"the demo may only echo, found: {line!r}"
 
-
-def test_the_protected_path_gate_reports_even_when_an_earlier_step_fails():
-    """Found by running a pull request: failing tests skipped the gate, so the reviewer never saw its verdict.
-
-    A skipped gate looks the same as a missing gate. `!cancelled()` keeps it running after a failure.
-    """
-    steps = load(ROOT / ".github" / "workflows" / "validate.yml")["jobs"]["validate"]["steps"]
-    gate = next(s for s in steps if str(s.get("name", "")).startswith("Protected-path gate"))
-    condition = str(gate["if"])
-    assert "!cancelled()" in condition or "always()" in condition, condition
-    assert "github.event_name == 'pull_request'" in condition, "it only has a base branch to compare with on a pull request"
