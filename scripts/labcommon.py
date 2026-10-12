@@ -222,3 +222,5 @@ def writes_into_protected(path: str, patterns: Iterable[str]) -> str | None:
         if first_match(target + "/x", [pattern]):
             return pattern
     return None
+
+# duplicate-name experiment: a protected path edited on an agent branch.
