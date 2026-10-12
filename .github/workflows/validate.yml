@@ -53,8 +53,10 @@ jobs:
 
       # This runs the script from the pull request's own checkout. A pull request that edits scripts/ or
       # this workflow is therefore judged by its own edited copy. See docs/SANDBOX-LABS.md, exercise 5.
+      # `!cancelled()` makes the gate report even when an earlier step failed. Without it, failing tests skip the
+      # gate, and a skipped gate looks the same as a missing one.
       - name: Protected-path gate (agent branches only)
-        if: github.event_name == 'pull_request'
+        if: ${{ !cancelled() && github.event_name == 'pull_request' }}
         env:
           HEAD_REF: ${{ github.head_ref }}
           BASE_REF: ${{ github.base_ref }}
