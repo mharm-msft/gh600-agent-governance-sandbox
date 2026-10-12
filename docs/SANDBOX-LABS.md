@@ -170,6 +170,8 @@ Part C. `gh pr checks` showed `Plan Gate  skipping`, and the check-run API repor
 
 Part D. Putting `[skip ci]` in the head commit's message meant GitHub created no workflow runs at all. `gh pr checks` printed `no checks reported on the 'copilot/ex2-skip-ci' branch`, and `gh run list` had nothing for the branch. The merge state was `BLOCKED`. Again the review rule could explain that, so the same temporary-ruleset test was repeated with no review rule, and the merge state was still `BLOCKED`: `X Pull request ...#12 is not mergeable: the base branch policy prohibits the merge.` Required checks that never start block the merge, so `[skip ci]` does not get an agent past the gate. It makes the pull request unmergeable.
 
+The same thing then happened by accident. The commit message of the pull request that recorded this result mentioned the token in a sentence about the feature, GitHub honored it, and the pull request got no checks at all until the message was rewritten. The token works anywhere in the head commit's message, not only as a bare directive.
+
 Part E. In the first commit both runs failed, because the repository's own test pinned the push trigger, so it told nothing. In the second commit the push run passed (the gate step does not run on pushes) and the pull request run failed at the gate, on the same commit, under the same check name:
 
 ```
