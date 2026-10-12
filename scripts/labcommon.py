@@ -222,3 +222,5 @@ def writes_into_protected(path: str, patterns: Iterable[str]) -> str | None:
         if first_match(target + "/x", [pattern]):
             return pattern
     return None
+
+# Exercise 5B: a comment in a protected script.
