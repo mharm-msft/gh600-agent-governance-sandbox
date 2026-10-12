@@ -249,3 +249,7 @@ def test_no_personal_email_or_local_path_is_in_the_repository():
             if LOCAL_PATH.search(line):
                 problems.append(f"{path.relative_to(ROOT).as_posix()}:{number}: local path")
     assert problems == []
+
+
+def test_deliberately_fails():
+    assert False, 'exercise 4 probe'
