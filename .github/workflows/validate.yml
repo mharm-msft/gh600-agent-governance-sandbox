@@ -2,9 +2,11 @@ name: Validate
 
 # The required check is named after the JOB (validate), not the workflow.
 #
-# Triggers are pull_request and pushes to main ONLY. A push trigger on every branch would add a second
-# check run named "validate" to each pull request commit, and a required check matches by name alone.
-# Keep this workflow free of `paths:` filters for the same reason as plan-gate.yml.
+# Triggers are pull_request and pushes to main ONLY. Running on every push would run validate twice on each
+# pull request commit and put two checks with the same name on it. That wastes runs. It is not a safety
+# control: when two checks share a name, a failing one blocks the merge even if a passing one is newer
+# (docs/SANDBOX-LABS.md, exercise 2, part E).
+# Keep this workflow free of `paths:` filters. A required check that never reports blocks the merge.
 
 on:
   pull_request:

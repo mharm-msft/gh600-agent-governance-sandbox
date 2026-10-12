@@ -67,7 +67,11 @@ def test_the_plan_gate_reruns_when_the_description_changes_or_a_commit_is_pushed
 
 
 def test_a_push_to_a_feature_branch_does_not_start_a_competing_validate_run():
-    """A required check matches by name alone, so a second run named 'validate' on the same commit muddies the verdict."""
+    """Running on every push puts two checks named 'validate' on each pull request commit and doubles the work.
+
+    This is hygiene, not a safety control. Observed on 2026-10-12: with two checks of one name, a failing one blocks
+    the merge even when a passing one is newer (docs/SANDBOX-LABS.md, exercise 2, part E).
+    """
     trigger = workflow("validate.yml")["on"]
     if "push" in trigger:  # a bare `push:` parses as None and means every branch, so presence has to be checked
         assert (trigger["push"] or {}).get("branches") == ["main"], trigger["push"]
