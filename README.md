@@ -12,7 +12,7 @@ Nothing in it is sensitive. There are no secrets, every workflow token is read-o
 
 ## Start here
 
-1. Read [docs/SANDBOX-LABS.md](docs/SANDBOX-LABS.md). It has nine exercises, each with the reason behind it.
+1. Read [docs/SANDBOX-LABS.md](docs/SANDBOX-LABS.md). It has nine exercises, each with the reason behind it. Exercises 1 to 8 have results recorded from a real run on 2026-10-12, including the things that did not go as predicted. Exercise 9 (a real cloud agent) has not been run.
 2. Preview the settings the exercises rely on. This makes no call and changes nothing: `python scripts/sandbox_settings.py`
 3. Apply them: `python scripts/sandbox_settings.py --apply`
 
@@ -51,7 +51,7 @@ Prose is guidance. A gate reports. A ruleset or an environment is what blocks.
 
 ## Known limits
 
-Listed with their reasons at the end of [docs/SANDBOX-LABS.md](docs/SANDBOX-LABS.md). The main one: a pull request runs its own copy of a workflow, so a check defined inside the change cannot be the only control.
+Listed with their reasons at the end of [docs/SANDBOX-LABS.md](docs/SANDBOX-LABS.md). The main one: every check that runs inside a pull request can be removed by that pull request, so the required review is the control that holds. The admin bypass in the ruleset is all-or-nothing: it overrides a failing check as well as the review.
 
 ## License
 
