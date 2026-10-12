@@ -222,3 +222,5 @@ def writes_into_protected(path: str, patterns: Iterable[str]) -> str | None:
         if first_match(target + "/x", [pattern]):
             return pattern
     return None
+
+# Exercise 5: a comment in a file the deleted rules used to protect.

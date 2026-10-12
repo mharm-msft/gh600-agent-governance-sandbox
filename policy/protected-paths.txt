@@ -17,9 +17,7 @@
 .github/copilot-instructions.md
 .github/CODEOWNERS
 AGENTS.md
-policy/**
 schemas/**
-scripts/**
 rulesets/**
 plans/**
 sample-service/acceptance/**
