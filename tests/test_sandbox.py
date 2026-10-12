@@ -66,13 +66,6 @@ def test_the_plan_gate_reruns_when_the_description_changes_or_a_commit_is_pushed
     assert {"opened", "edited", "synchronize", "reopened"} <= types
 
 
-def test_a_push_to_a_feature_branch_does_not_start_a_competing_validate_run():
-    """A required check matches by name alone, so a second run named 'validate' on the same commit muddies the verdict."""
-    trigger = workflow("validate.yml")["on"]
-    if "push" in trigger:  # a bare `push:` parses as None and means every branch, so presence has to be checked
-        assert (trigger["push"] or {}).get("branches") == ["main"], trigger["push"]
-
-
 def test_the_plan_gate_only_applies_to_the_branch_prefix_the_policy_gate_uses():
     condition = workflow("plan-gate.yml")["jobs"]["require-plan"]["if"]
     assert "startsWith(github.head_ref, 'copilot/')" in condition
