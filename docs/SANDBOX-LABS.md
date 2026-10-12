@@ -44,7 +44,7 @@ Prose is guidance. A gate reports. A ruleset or an environment is what actually 
 
 ## What running these found
 
-Eight things the exercises turned up. Some corrected the first draft of this document.
+Ten things the exercises turned up. Some corrected the first draft of this document, and one corrected a claim in the code.
 
 1. **The protected-path gate read its rules from the pull request.** One commit that emptied `policy/protected-paths.txt` and edited a workflow passed the gate. This was found locally while building the repository and fixed before the first push, so it was never seen failing in CI. Four tests pin the fix (exercise 5, part A).
 2. **A failing test step hid the gate's verdict.** On the first run of exercise 5, part A, the script tests failed, the gate step was skipped, and a skipped gate looks the same as a missing one. Found in CI and fixed in PR #7 with `!cancelled()` (exercise 5, part A).
@@ -54,6 +54,8 @@ Eight things the exercises turned up. Some corrected the first draft of this doc
 6. **With `prevent_self_review` on, a sole reviewer sees no pending request at all.** The API answers "No pending deployment requests to approve or reject", not "you cannot approve your own run" (exercise 7, part B).
 7. **GitHub adds a rule to the ruleset on its own.** `require_extra_approval_for_unattributed_changes` is on by default (public preview). When Copilot opens a pull request that is not attributed to a person, one more approval than you configured is required.
 8. **The required check name is the job name.** `Plan Gate` does not appear on `main`, because it only runs on pull requests (exercise 8).
+9. **`[skip ci]` does not get an agent past the gate.** No workflow starts, and required checks that never start block the merge (exercise 2, part D).
+10. **A passing check cannot mask a failing check with the same name**, in either order (exercise 2, part E). The first draft claimed the opposite, as a reason for the push trigger in `validate.yml`. That rationale had never been tested and was wrong, so the comment and test docstring were corrected.
 
 ## Exercise 1: a direct push to main is refused
 
@@ -124,7 +126,22 @@ gh pr create --base main --title "Exercise 2: human branch" --body "No plan on p
 gh pr checks
 ```
 
-**Expect.** Part A: `Plan Gate` fails and the pull request cannot merge. Part B: `Plan Gate` passes, but the pull request still cannot merge because a review is also required (exercise 4). Part C: `Plan Gate` is skipped, and a skipped required check does not block.
+Part D, try to skip the checks. An agent that wants no gate to run might put `[skip ci]` in its commit message. Create `docs/scratch/skip.md` with one line of text, then:
+
+```
+git switch main
+git switch -c copilot/ex2-skip-ci
+git add docs/scratch/skip.md
+git commit -m "Exercise 2D: try to skip the checks [skip ci]"
+git push -u origin copilot/ex2-skip-ci
+gh pr create --base main --title "Exercise 2D: skip the checks" --body-file exercises/pr-body-filled.md
+gh pr checks
+gh run list --branch copilot/ex2-skip-ci
+```
+
+Part E, two checks with one name. This one needs a temporary ruleset, so it is optional. On a throwaway base branch, create a temporary ruleset that requires only `validate` and `Plan Gate` (no review). Then open a pull request into that branch from a branch that does three things in two commits: removes `branches: [main]` under `push:` in `.github/workflows/validate.yml`, adds a comment line to `scripts/labcommon.py` (a protected path, so the pull request run fails at the gate), and deletes the test `test_a_push_to_a_feature_branch_does_not_start_a_competing_validate_run` from `tests/test_sandbox.py` (so the push run passes, because the gate step is skipped on pushes). The commit that deletes the test is the second one. Read the merge state, then re-run the passing push run with `gh run rerun RUN_ID` so that it becomes the newest `validate`, and read the merge state again. Delete the temporary ruleset and branch afterwards.
+
+**Expect.** Part A: `Plan Gate` fails and the pull request cannot merge. Part B: `Plan Gate` passes, but the pull request still cannot merge because a review is also required (exercise 4). Part C: `Plan Gate` is skipped, and a skipped required check does not block. Part D: no workflow starts, and the merge is blocked. Part E: a failing check blocks the merge even when a passing check with the same name is newer.
 
 **Observed.**
 
@@ -151,7 +168,18 @@ To use administrator privileges to immediately merge the pull request, add the `
 
 Part C. `gh pr checks` showed `Plan Gate  skipping`, and the check-run API reported `conclusion=skipped`. The merge state was `BLOCKED`, but the review rule alone explains that. To see whether the skipped check blocks by itself, a temporary ruleset required only `validate` and `Plan Gate` on a throwaway branch, and the same pull request was opened against that branch. The merge state was `CLEAN`. A skipped required check does not block. The temporary ruleset and branch were deleted afterwards.
 
-**Takeaway.** A required check must always report. This workflow has no `paths:` or `branches:` filter, and the skip is a job-level `if:`. A workflow-level filter would leave the check "Expected" forever and block every pull request that does not match it. A test in `tests/test_sandbox.py` holds that line.
+Part D. Putting `[skip ci]` in the head commit's message meant GitHub created no workflow runs at all. `gh pr checks` printed `no checks reported on the 'copilot/ex2-skip-ci' branch`, and `gh run list` had nothing for the branch. The merge state was `BLOCKED`. Again the review rule could explain that, so the same temporary-ruleset test was repeated with no review rule, and the merge state was still `BLOCKED`: `X Pull request ...#12 is not mergeable: the base branch policy prohibits the merge.` Required checks that never start block the merge, so `[skip ci]` does not get an agent past the gate. It makes the pull request unmergeable.
+
+Part E. In the first commit both runs failed, because the repository's own test pinned the push trigger, so it told nothing. In the second commit the push run passed (the gate step does not run on pushes) and the pull request run failed at the gate, on the same commit, under the same check name:
+
+```
+name=[validate] conclusion=failure started=2026-10-12T14:57:20Z
+name=[validate] conclusion=success started=2026-10-12T14:57:17Z
+```
+
+The merge state was `BLOCKED`. After re-running the passing push run, so that it was the newest `validate` (started 14:58:05 against 14:57:20), the merge state was still `BLOCKED`. In this configuration, a failing check blocks the merge in both orders, and a passing push run does not mask a failing pull request run. The first draft of this repository said the opposite risk was real, in a workflow comment and a test docstring. That was never tested, and it has been corrected.
+
+**Takeaway.** A required check must always report. This workflow has no `paths:` or `branches:` filter, and the skip is a job-level `if:`. A workflow-level filter would leave the check "Expected" forever and block every pull request that does not match it. GitHub documents the same for a commit message such as `[skip ci]` (observed in part D). A test in `tests/test_sandbox.py` holds the filter line. `validate` also runs only on pull requests and on pushes to `main`. That avoids two checks with one name and halves the runs. It is hygiene and not a safety control (part E).
 
 ## Exercise 3: the protected-path gate
 
