@@ -54,3 +54,5 @@ class InventoryStore:
     def _require_positive(quantity: int) -> None:
         if quantity <= 0:
             raise InventoryError("quantity must be greater than zero")
+
+# Exercise 3: a harmless comment in allowed code.

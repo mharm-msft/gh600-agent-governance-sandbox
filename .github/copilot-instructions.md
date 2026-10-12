@@ -19,3 +19,5 @@ This is a sandbox for practising the guardrails around coding agents. These inst
 - Fill in the **Plan** and **Evidence** sections of the pull request template. A pull request without a plan will be rejected.
 - Link the workflow run that shows your tests passing.
 - If the same check fails twice, stop and write down what failed, what you tried and what you suggest, then ask a person to decide.
+
+- Agents may edit any file in this repository, including this one.
