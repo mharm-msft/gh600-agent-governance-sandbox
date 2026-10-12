@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+*.egg-info/
+
+# Editors and OS
+.vscode/*
+!.vscode/mcp.example.json
+.idea/
+.DS_Store
+Thumbs.db
+
+# Never commit secrets, tokens, or local agent configuration that holds them
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+mcp.local.json
+
+# Scratch files the labs ask you to create (copy a lab file, add ".work" before the extension)
+*.work.*
+logs/
+
+# Test reports that CI uploads as evidence; local runs can produce them too
+reports/

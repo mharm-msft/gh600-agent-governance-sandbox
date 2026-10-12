@@ -1,0 +1,4 @@
+# Tooling for the lab scripts and their tests. The sample service itself has no dependencies.
+jsonschema>=4.23,<5
+PyYAML>=6.0.2,<7
+pytest>=8.3,<10

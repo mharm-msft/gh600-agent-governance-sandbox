@@ -1,0 +1,25 @@
+name: Deploy demo (prints text only)
+
+# A stand-in for a real deployment, so you can practise environment protection rules without
+# touching anything. It can only be started by hand, from the Actions tab or `gh workflow run`.
+# The job below targets the `production` environment. When that environment has required reviewers,
+# the job WAITS before running any step until a reviewer approves it.
+# It deploys nothing, calls no cloud and uses no secrets: every step only prints text.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    name: deploy
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    environment: production
+    steps:
+      - name: Pretend to deploy
+        run: |
+          echo "A required reviewer approved this run, so it is executing."
+          echo "This job only prints text. It changes nothing."

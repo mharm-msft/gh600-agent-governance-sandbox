@@ -1,0 +1,34 @@
+name: Plan Gate
+
+# Requires a filled-in plan in the pull request BODY for agent branches (copilot/*).
+# This REPORTS a problem. It only BLOCKS a merge because the ruleset in rulesets/protect-main.json
+# lists the check "Plan Gate" as required. The required name is the JOB name below, not the workflow name.
+#
+# Keep this workflow free of `paths:` and `branches:` filters. A required check that never reports
+# leaves the pull request "Expected - Waiting for status to be reported" forever. A job-level `if:`
+# is safe: a skipped job reports "skipped", which a required check accepts.
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+
+permissions:
+  contents: read
+
+jobs:
+  require-plan:
+    name: Plan Gate
+    # Defensive gating: only run for agent branches, and only when tied to a pull request.
+    if: github.event_name == 'pull_request' && startsWith(github.head_ref, 'copilot/')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}   # run the BASE copy of the gate script, not code from the PR
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      # plan_gate.py reads the PR description from GITHUB_EVENT_PATH, so no PR text is ever interpolated into a shell command.
+      - name: Require a filled-in plan
+        run: python scripts/plan_gate.py

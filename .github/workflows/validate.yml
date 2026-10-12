@@ -1,0 +1,71 @@
+name: Validate
+
+# The required check is named after the JOB (validate), not the workflow.
+#
+# Triggers are pull_request and pushes to main ONLY. A push trigger on every branch would add a second
+# check run named "validate" to each pull request commit, and a required check matches by name alone.
+# Keep this workflow free of `paths:` filters for the same reason as plan-gate.yml.
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: validate
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install tooling
+        run: pip install -r requirements.txt
+
+      - name: Script tests
+        run: python -m pytest --junitxml=reports/script-tests.xml
+
+      - name: Sample service baseline tests
+        working-directory: sample-service
+        run: python -m pytest --junitxml=../reports/sample-service-baseline.xml
+
+      - name: Acceptance tests are the agent's finish line (they are expected to FAIL until a task is done)
+        working-directory: sample-service
+        run: |
+          if python -m pytest acceptance -q; then
+            echo "Acceptance tests already pass. If no agent task is in flight, retire them."
+          else
+            echo "Acceptance tests fail as designed: this is the definition of done for open agent tasks."
+          fi
+
+      - name: Lint agent customization files
+        run: python scripts/lint_agent_config.py
+
+      # This runs the script from the pull request's own checkout. A pull request that edits scripts/ or
+      # this workflow is therefore judged by its own edited copy. See docs/SANDBOX-LABS.md, exercise 5.
+      - name: Protected-path gate (agent branches only)
+        if: github.event_name == 'pull_request'
+        env:
+          HEAD_REF: ${{ github.head_ref }}
+          BASE_REF: ${{ github.base_ref }}
+        run: python scripts/policy_gate.py --branch "$HEAD_REF" --base "origin/$BASE_REF" --head HEAD
+
+      # Evidence a reviewer can open. Hidden folders such as .pytest_cache are skipped by upload-artifact unless
+      # asked for, so upload the visible JUnit reports, and fail if there are none rather than uploading nothing.
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: test-reports
+          path: reports/
+          if-no-files-found: error

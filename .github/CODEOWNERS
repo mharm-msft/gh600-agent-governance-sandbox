@@ -1,0 +1,19 @@
+# Who must review changes to which paths. CODEOWNERS ROUTES review requests automatically.
+# It only BLOCKS a merge when "Require review from Code Owners" is enforced by a ruleset or
+# branch protection. This repository does that: see rulesets/protect-main.json.
+#
+# The last matching pattern wins, so keep the broad rule first and the specific rules after it.
+
+*                       @mharm-msft
+
+# Rules that govern agents: protect them from the agents they govern.
+/.github/               @mharm-msft
+/policy/                @mharm-msft
+/schemas/               @mharm-msft
+/scripts/               @mharm-msft
+/rulesets/              @mharm-msft
+/AGENTS.md              @mharm-msft
+
+# What defines "done": the approved plans and the acceptance tests an agent is graded by.
+/plans/                          @mharm-msft
+/sample-service/acceptance/      @mharm-msft

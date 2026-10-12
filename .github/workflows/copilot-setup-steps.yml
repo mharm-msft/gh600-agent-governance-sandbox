@@ -1,0 +1,34 @@
+name: "Copilot Setup Steps"
+
+# Prepares the Copilot cloud agent's environment before it starts working on this repository.
+# Rules (GitHub docs, checked 2026-10-09):
+#   * The file must be at .github/workflows/copilot-setup-steps.yml on the DEFAULT branch.
+#   * The single job MUST be named `copilot-setup-steps`.
+#   * Only these job keys are honored: steps, permissions, runs-on, services, snapshot, timeout-minutes.
+#   * timeout-minutes may not exceed 59.
+#   * If a step fails, the remaining setup steps are skipped and the agent still starts.
+#     So a failed setup shows up as a broken environment, not as a "reasoning" error.
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - .github/workflows/copilot-setup-steps.yml
+  pull_request:
+    paths:
+      - .github/workflows/copilot-setup-steps.yml
+
+jobs:
+  copilot-setup-steps:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install lab tooling
+        run: pip install -r requirements.txt

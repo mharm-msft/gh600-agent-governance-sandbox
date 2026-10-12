@@ -1,0 +1,74 @@
+name: Agent task
+description: Define a task for an AI agent as a contract: inputs, outputs, success criteria, limits.
+title: "[TASK] "
+labels: ["agent-task"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        An agent can only be judged against a clear contract. If you cannot fill in a required field, the task is not ready to delegate.
+  - type: input
+    id: goal
+    attributes:
+      label: Goal
+      description: One sentence a stranger could test.
+      placeholder: "Discontinued items cannot be sold or restocked."
+    validations:
+      required: true
+  - type: dropdown
+    id: risk
+    attributes:
+      label: Risk level
+      description: Drives how much human oversight this needs.
+      options:
+        - Low (docs, formatting)
+        - Medium (application code, dependency bumps)
+        - High (workflows, infrastructure, auth)
+        - Critical (production, secrets) - an agent must not do this alone
+    validations:
+      required: true
+  - type: textarea
+    id: allowed-scope
+    attributes:
+      label: Allowed scope
+      description: The paths the agent may change.
+      placeholder: "sample-service/src/inventory/"
+    validations:
+      required: true
+  - type: textarea
+    id: forbidden-scope
+    attributes:
+      label: Forbidden scope and constraints
+      description: Paths it must not touch and things that must not happen.
+      value: |
+        - Do not change .github/, policy/, schemas/, scripts/, plans/ or sample-service/acceptance/ (the tests that define done)
+        - No new dependencies
+        - No secrets or personal data
+        - No direct pushes to main
+    validations:
+      required: true
+  - type: textarea
+    id: success
+    attributes:
+      label: Success criteria
+      description: Each item must be checkable. "Tests pass" is necessary but not sufficient.
+      placeholder: |
+        - [ ] python -m pytest passes
+        - [ ] acceptance/test_discontinue.py passes
+        - [ ] only allowed paths changed
+    validations:
+      required: true
+  - type: checkboxes
+    id: plan-first
+    attributes:
+      label: Plan first
+      options:
+        - label: The agent must open a plan-only pull request and wait for approval before changing code.
+  - type: textarea
+    id: escalation
+    attributes:
+      label: Stop and escalate when
+      value: |
+        - The same check fails twice
+        - A requirement is unclear
+        - A path or tool outside the scope is needed

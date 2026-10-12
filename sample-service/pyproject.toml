@@ -1,0 +1,9 @@
+[project]
+name = "inventory-sample-service"
+version = "0.1.0"
+description = "Tiny synthetic service used as the target codebase for the GH-600 agent labs."
+requires-python = ">=3.11"
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]

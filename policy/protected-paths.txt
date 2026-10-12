@@ -1,0 +1,25 @@
+# Paths an agent must NOT change on its own. A human changes these from a normal branch.
+# One glob per line; '**' crosses folders. Lines starting with # are comments.
+#
+# Why: an agent that can edit its own instructions, workflows, or policy can quietly
+# widen its own permissions. Protect the rules separately from the work the rules govern.
+#
+# The plans and acceptance-test rules protect what DEFINES DONE: the approved plans and the
+# tests an agent is graded by. An agent that can edit the test it is graded by can make any
+# change "pass". Prose such as "the agent must not edit them" is guidance. This list is enforcement.
+#
+# rulesets/** is protected for the same reason: it is the file that defines the repository's own rules.
+
+.github/workflows/**
+.github/agents/**
+.github/instructions/**
+.github/hooks/**
+.github/copilot-instructions.md
+.github/CODEOWNERS
+AGENTS.md
+policy/**
+schemas/**
+scripts/**
+rulesets/**
+plans/**
+sample-service/acceptance/**
